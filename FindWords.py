@@ -1,4 +1,4 @@
-import nltk, math
+import nltk, sys
 from nltk.corpus import words
 
 # words and letters
@@ -29,7 +29,7 @@ def is_word(word_to_test, min_length=default_min_length):
 
 
 def stop_looking_for_words(word, max_word_length=default_max_word_length):
-    if len(word)>=max_word_length:
+    if len(word) >= max_word_length:
         return True;
     else:
         return False;
@@ -42,13 +42,15 @@ def find_words(word, letters,
     tested_words_count += 1
     if (tested_words_count/possible_words)*100 > (current_progress + progress_interval):
         current_progress += progress_interval
-        print("current progress is " + str(current_progress) + "%")
+        sys.stdout.write('\r')
+        sys.stdout.write("current progress is " + str(current_progress) + "%")
+        sys.stdout.flush()
 
     # check word
     if is_word(word):
-        print(word)
-        if word not in found_words:
-            found_words.append(word)
+        #print(word)
+        #if word not in found_words:
+        found_words.append(word)
 #    else:
 #        print("    not word: " + word)
 
@@ -68,9 +70,11 @@ def start_find_words(mandatory_letter, optional_letters,
     # sort letters by decreasing frequency
     unsorted_letters = optional_letters + mandatory_letter
     letters = ''.join(sorted(unsorted_letters, key=lambda x: letter_frequency[x], reverse=True))
-    print(letters)
+    #print(letters)
 
     #track progress
+    #sys.stdout.write("current progress is 0%")
+    #sys.stdout.flush()
     global tested_words_count, current_progress, possible_words
     possible_words = 1
     for i in range(max_word_length-1):
@@ -78,13 +82,14 @@ def start_find_words(mandatory_letter, optional_letters,
     tested_words_count = 0
     current_progress = 0
 
-    find_words(mandatory_letter, optional_letters,
-               max_word_length)
+    find_words(mandatory_letter, optional_letters, max_word_length)
 
     # print results
-    print("current progress is 100%")
+    sys.stdout.write('\r')
+    sys.stdout.write("current progress is 100%")
+    sys.stdout.flush()
     print("")
-    print("The words with mandatory letter " + mandatory_letter + " and optional letters " + optional_letters + " are: ")
+    print("There are " + str(len(found_words)) + " words with mandatory letter " + mandatory_letter + " and optional letters " + optional_letters + " are: ")
     for real_word in found_words:
         print(real_word)
 
