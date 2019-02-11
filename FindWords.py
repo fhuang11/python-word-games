@@ -1,11 +1,13 @@
 import nltk
 import sys
 import copy as cp
-from nltk.corpus import words
+from nltk.corpus import wordnet
 import timeit
 
+# install nltk (first time only)
+#nltk.download('words')
+
 # words and letters
-nltk.download('words')
 # letter frequency from Concise Oxford Dictionary (9th edition, 1995)
 # https://www3.nd.edu/~busiforc/handouts/cryptography/letterfrequencies.html
 letter_frequency = {'e': 11.1607, 'a': 8.4966, 'r': 7.5809, 'i': 7.5448, 'o': 7.1635, 't': 6.9509, 'n': 6.6544,
@@ -19,7 +21,7 @@ letter_frequency = {'e': 11.1607, 'a': 8.4966, 'r': 7.5809, 'i': 7.5448, 'o': 7.
 # for progress tracker
 possible_words = 0
 tested_words_count = 0
-progress_interval = 5
+progress_interval = 1
 current_progress = 0
 
 # game parameters
@@ -30,95 +32,42 @@ found_words = []
 
 
 def is_word(word_to_test, min_length=default_min_word_length):
-    if len(word_to_test) >= min_length and word_to_test in words.words():
+    #if len(word_to_test) >= min_length and word_to_test in words.words():
+    if len(word_to_test) >= min_length and word_to_test in wordnet.words():
         return True
     else:
         return False
-
-
 # print(is_word("test"))
 # print(is_word("exys"))
 
 
-# def stop_looking_for_words(word, max_word_length=default_max_word_length):
-#     if len(word) >= max_word_length:
-#         return True;
-#     else:
-#         return False;
-
-def check_word(word_array, min_word_length, debug):
+def check_word(word_array, min_word_length, debug, progress_bar):
     global tested_words_count, current_progress, found_words
     # check word
-    #if debug: print("word array: ", word_array)
     word = ''.join(word_array)
-    #if debug: print("word: ", word)
-    if len(word_array) >= min_word_length and is_word(word):
-        # print(word)
-        #if word not in found_words:
+    if is_word(word, min_word_length):
         found_words.append(word)
-        #elif debug:
-        #    print("duplicated word:", word)
-    #elif debug:
-    #    print("not word:", word)
+        if debug:
+            print("word:", word)
 
     # monitor progress
-    if not debug:
+    if not debug and progress_bar:
         tested_words_count += 1
         if (tested_words_count / possible_words) * 100 > (current_progress + progress_interval):
             current_progress += progress_interval
-            sys.stdout.write('\r')
-            sys.stdout.write("current progress is " + str(current_progress) + "%")
+            sys.stdout.write("\rcurrent progress is " + str(current_progress) + "%")
             sys.stdout.flush()
 
-# # find all word arrays with length
-# def find_word_arrays(mandatory_letter, letters, length, debug):
-#     blank_word = [' '] * length
-#     word_arrays = []
-#     for mandatory_word_position in range(length):
-#         word_array = cp.deepcopy(blank_word)
-#         word_array[mandatory_word_position] = mandatory_letter
-#         word_arrays = fill_in_blank_letters(word_array, word_arrays, letters)
-#     return word_arrays
-#
-# # fill in blank letters in word_array one position at a time
-# def fill_in_blank_letters(word_array, existing_word_arrays, letters):
-#     word_arrays = [word_array]
-#     for i in range(len(word_array)):
-#         new_word_arrays = []
-#         for word_array in word_arrays:
-#             if word_array[i] == ' ':
-#                 for letter in letters:
-#                     new_word_array = cp.deepcopy(word_array)
-#                     new_word_array[i] = letter
-#                     # if debug: print(new_word_array)
-#                     if i != len(word_array) - 1:
-#                         new_word_arrays.append(new_word_array)
-#                     else:
-#                         existing_word_arrays.append(new_word_array)
-#                 word_arrays = new_word_arrays
-#     return existing_word_arrays
-
 def find_more_words_arrays(word_arrays, word_arrays_with_only_optional_letters,
-                           mandatory_letter, optional_letters, letters, min_word_length, debug):
+                           mandatory_letter, optional_letters, letters, min_word_length, debug, progress_bar):
     new_word_arrays = []
-    # # add letter to beginning of existing word
-    # for word_array in word_arrays:
-    #     for letter in letters:
-    #         new_word_array = [letter] + word_array
-    #     new_word_arrays.append(new_word_array)
 
     # add letter to end of existing word
     for word_array in word_arrays:
         for letter in letters:
             new_word_array = word_array + [letter]
-            #if debug and new_word_array in new_word_arrays: print("duplicated word", new_word_array)
             new_word_arrays.append(new_word_array)
-            check_word(new_word_array, min_word_length, debug)
-            #if debug: print("new word array", new_word_array)
-    # # word with mandatory letter at beginning and only optional letters
-    # new_word_array = [' '] * (len(word_arrays[0])+1)
-    # new_word_array[0] = mandatory_letter
-    # new_word_arrays = fill_in_blank_letters(new_word_array, new_word_arrays, optional_letters)
+            check_word(new_word_array, min_word_length, debug, progress_bar)
 
     # word with only optional letters except for mandatory letter at end
     new_word_arrays_with_only_optional_letters = []
@@ -127,45 +76,36 @@ def find_more_words_arrays(word_arrays, word_arrays_with_only_optional_letters,
             new_word_array_without_mandatory_letter = word_array + [letter]
             new_word_arrays_with_only_optional_letters.append(new_word_array_without_mandatory_letter)
             new_word_array = new_word_array_without_mandatory_letter + [mandatory_letter]
-            #if debug and new_word_array in new_word_arrays: print("duplicated word", new_word_array)
             new_word_arrays.append(new_word_array)
-            check_word(new_word_array, min_word_length, debug)
-            #if debug: print("new word array", new_word_array)
+            check_word(new_word_array, min_word_length, debug, progress_bar)
+
     return new_word_arrays, new_word_arrays_with_only_optional_letters
 
 # find all possible words with mandatory letter and optional letters. Each letter can be used multiple times.
+# note progress bar does not work in debug mode and is disabled
 def start_find_words(mandatory_letter, optional_letters,
                      min_word_length=default_min_word_length, max_word_length=default_max_word_length,
-                     debug=False):
+                     debug=False, progress_bar=True):
+
     # sort letters by decreasing frequency
     #unsorted_letters = optional_letters + mandatory_letter
     #letters = ''.join(sorted(unsorted_letters, key=lambda x: letter_frequency[x], reverse=True))
     # print(letters)
+
     letters = optional_letters + mandatory_letter
 
     # track progress
-    # sys.stdout.write("current progress is 0%")
-    # sys.stdout.flush()
-    global tested_words_count, current_progress, possible_words
-    word_lengths = list(range(min_word_length, max_word_length+1))
-    possible_words = 0
-    for l in word_lengths:
-        possible_words += l*(len(letters) ** (l-1))
-    print("possible words:", possible_words)
-    tested_words_count = 0
-    current_progress = 0
-
-    # # check all possible words with min word length
-    # word_arrays = find_word_arrays(mandatory_letter, letters, min_word_length, debug)
-    # for word_array in word_arrays:
-    #     check_word(word_array, debug)
-    #
-    # # check all possible words of all other word lengths
-    # for length in range(min_word_length+1, max_word_length+1):
-    #     word_arrays = find_word_arrays(mandatory_letter, letters, min_word_length, debug)
-    #     if len(word_arrays[0]) >= min_word_length:
-    #         for word_array in word_arrays:
-    #             check_word(word_array, debug)
+    if progress_bar and not debug:
+        global tested_words_count, current_progress, possible_words
+        word_lengths = list(range(min_word_length, max_word_length+1))
+        possible_words = 0
+        for l in word_lengths:
+            possible_words += l*(len(letters) ** (l-1))
+        print("possible words:", possible_words)
+        sys.stdout.write("current progress is 0%")
+        sys.stdout.flush()
+        tested_words_count = 0
+        current_progress = 0
 
     # find words of all lengths starting with word of length 1 [t]
     # by recursively finding word_arrays of increasing length
@@ -174,30 +114,38 @@ def start_find_words(mandatory_letter, optional_letters,
     for length in range(1, max_word_length):
         word_arrays, word_arrays_with_only_optional_letters = find_more_words_arrays(word_arrays,
             word_arrays_with_only_optional_letters, mandatory_letter, optional_letters, letters,
-            min_word_length, debug)
+            min_word_length, debug, progress_bar)
 
+    if progress_bar and not debug:
+        sys.stdout.write("\rcurrent progress is 100%")
+        sys.stdout.flush()
+        print("")
+    return found_words
+
+def print_results(found_words, mandatory_letter, optional_letters):
     # print results
-    # if not debug:
-    #     sys.stdout.write('\r')
-    #     sys.stdout.write("current progress is 100%")
-    #     sys.stdout.flush()
-    print("")
     print("There are " + str(len(found_words)) + " words with mandatory letter " + mandatory_letter +
           " and optional letters " + optional_letters + " are: ")
-    for real_word in found_words:
-        print(real_word)
-
+    # print words and definitions
+    for word in found_words:
+        try:
+            print(word, "-", wordnet.synsets(word)[0].definition())
+        except IndexError:
+            print(word)
+#print(wordnet.synsets("dog")[0].definition())
 
 # test
 #for long word 169826304 combinations
-start_find_words(mandatory_letter="r", optional_letters="tnacifo")
-#start_find_words(mandatory_letter="r", optional_letters="tnco", max_word_length=5, debug=True)
-#start_find_words(mandatory_letter="r", optional_letters="tnco", max_word_length=5)
+mandatory_letter="r"
+optional_letters="tnacifo"
+#found_words = start_find_words(mandatory_letter, optional_letters, debug=True)
+#print_results(found_words, mandatory_letter, optional_letters)
 
-# timing for short word 3635 combinations
-#print(timeit.timeit('start_find_words(mandatory_letter="r", optional_letters="tnco", max_word_length=5)',
-#              'from __main__ import start_find_words', number=10)/10)
-# run time with find_word_arrays is about 46 sec
-# run time with find_more_word_arrays is about 82 sec
-
+mandatory_letter="r"
+optional_letters="tnco"
+found_words = start_find_words(mandatory_letter, optional_letters, max_word_length=5, debug=False)
+print_results(found_words, mandatory_letter, optional_letters)
+# timing for short word 3635 combinations about 8 seconds without printing results
+print(timeit.timeit('start_find_words(mandatory_letter="r", optional_letters="tnco", max_word_length=6, progress_bar=False)',
+              'from __main__ import start_find_words', number=10)/10)
 
