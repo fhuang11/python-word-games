@@ -16,8 +16,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/FindWords.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-421">
-              <caret line="68" column="30" selection-start-line="68" selection-start-column="30" selection-end-line="68" selection-end-column="30" />
+            <state relative-caret-position="284">
+              <caret line="192" lean-forward="true" selection-start-line="192" selection-end-line="192" />
               <folding>
                 <element signature="e#0#11#0" expanded="true" />
               </folding>
@@ -128,20 +128,21 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="25" width="1920" height="1055" extended-state="6" />
+    <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.24986821" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.49762782" visible="true" weight="0.32937366" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.49762782" visible="true" weight="0.32937366" />
       <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.49920928" weight="0.39956802" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Version Control" order="7" />
       <window_info anchor="bottom" id="Terminal" order="8" />
-      <window_info active="true" anchor="bottom" id="Event Log" order="9" sideWeight="0.50237215" side_tool="true" visible="true" weight="0.32937366" />
+      <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.50237215" side_tool="true" weight="0.32937366" />
       <window_info anchor="bottom" id="Python Console" order="10" />
       <window_info anchor="right" id="Commander" order="0" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
@@ -161,8 +162,8 @@
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/FindWords.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-421">
-          <caret line="68" column="30" selection-start-line="68" selection-start-column="30" selection-end-line="68" selection-end-column="30" />
+        <state relative-caret-position="284">
+          <caret line="192" lean-forward="true" selection-start-line="192" selection-end-line="192" />
           <folding>
             <element signature="e#0#11#0" expanded="true" />
           </folding>

@@ -46,18 +46,20 @@ def is_word(word_to_test, min_length=default_min_word_length):
 #     else:
 #         return False;
 
-def check_word(word_array, debug):
+def check_word(word_array, min_word_length, debug):
     global tested_words_count, current_progress, found_words
     # check word
     #if debug: print("word array: ", word_array)
     word = ''.join(word_array)
     #if debug: print("word: ", word)
-    if is_word(word):
+    if len(word_array) >= min_word_length and is_word(word):
         # print(word)
-        # if word not in found_words:
+        #if word not in found_words:
         found_words.append(word)
-    elif debug:
-        print("not word:", word)
+        #elif debug:
+        #    print("duplicated word:", word)
+    #elif debug:
+    #    print("not word:", word)
 
     # monitor progress
     if not debug:
@@ -68,64 +70,68 @@ def check_word(word_array, debug):
             sys.stdout.write("current progress is " + str(current_progress) + "%")
             sys.stdout.flush()
 
-# find all word arrays with length
-def find_word_arrays(mandatory_letter, letters, length, debug):
-    blank_word = [' '] * length
-    word_arrays = []
-    for mandatory_word_position in range(length):
-        word_array = cp.deepcopy(blank_word)
-        word_array[mandatory_word_position] = mandatory_letter
-        word_arrays = fill_in_blank_letters(word_array, word_arrays, letters)
-    return word_arrays
+# # find all word arrays with length
+# def find_word_arrays(mandatory_letter, letters, length, debug):
+#     blank_word = [' '] * length
+#     word_arrays = []
+#     for mandatory_word_position in range(length):
+#         word_array = cp.deepcopy(blank_word)
+#         word_array[mandatory_word_position] = mandatory_letter
+#         word_arrays = fill_in_blank_letters(word_array, word_arrays, letters)
+#     return word_arrays
+#
+# # fill in blank letters in word_array one position at a time
+# def fill_in_blank_letters(word_array, existing_word_arrays, letters):
+#     word_arrays = [word_array]
+#     for i in range(len(word_array)):
+#         new_word_arrays = []
+#         for word_array in word_arrays:
+#             if word_array[i] == ' ':
+#                 for letter in letters:
+#                     new_word_array = cp.deepcopy(word_array)
+#                     new_word_array[i] = letter
+#                     # if debug: print(new_word_array)
+#                     if i != len(word_array) - 1:
+#                         new_word_arrays.append(new_word_array)
+#                     else:
+#                         existing_word_arrays.append(new_word_array)
+#                 word_arrays = new_word_arrays
+#     return existing_word_arrays
 
-# fill in blank letters in word_array one position at a time
-def fill_in_blank_letters(word_array, existing_word_arrays, letters):
-    word_arrays = [word_array]
-    for i in range(len(word_array)):
-        new_word_arrays = []
-        for word_array in word_arrays:
-            if word_array[i] == ' ':
-                for letter in letters:
-                    new_word_array = cp.deepcopy(word_array)
-                    new_word_array[i] = letter
-                    # if debug: print(new_word_array)
-                    if i != len(word_array) - 1:
-                        new_word_arrays.append(new_word_array)
-                    else:
-                        existing_word_arrays.append(new_word_array)
-                word_arrays = new_word_arrays
-    return existing_word_arrays
-
-def find_more_words_arrays(word_arrays, mandatory_letter, optional_letters, letters, debug):
+def find_more_words_arrays(word_arrays, word_arrays_with_only_optional_letters,
+                           mandatory_letter, optional_letters, letters, min_word_length, debug):
     new_word_arrays = []
-    blank_word = [' '] * (len(word_arrays[0])+1)
-    # add letter to beginning of existing word
-    for word_array in word_arrays:
-        new_word_array = cp.deepcopy(blank_word)
-        for i in range(len(word_arrays[0])):
-            new_word_array[i + 1] = word_array[i]
-            for letter in letters:
-                new_word_array_w_new_letter = cp.deepcopy(new_word_array)
-                new_word_array_w_new_letter[0] = letter
-        new_word_arrays.append(new_word_array_w_new_letter)
+    # # add letter to beginning of existing word
+    # for word_array in word_arrays:
+    #     for letter in letters:
+    #         new_word_array = [letter] + word_array
+    #     new_word_arrays.append(new_word_array)
+
     # add letter to end of existing word
     for word_array in word_arrays:
-        new_word_array = cp.deepcopy(blank_word)
-        for i in range(len(word_arrays[0])):
-            new_word_array[i] = word_array[i]
-            for letter in letters:
-                new_word_array_w_new_letter = cp.deepcopy(new_word_array)
-                new_word_array_w_new_letter[len(word_arrays[0])] = letter
-        new_word_arrays.append(new_word_array_w_new_letter)
-    # word with mandatory letter at beginning and only optional letters
-    new_word_array = cp.deepcopy(blank_word)
-    new_word_array[0] = mandatory_letter
-    new_word_arrays = fill_in_blank_letters(new_word_array, new_word_arrays, optional_letters)
-    # word with mandatory letter at end and only optional letters
-    new_word_array = cp.deepcopy(blank_word)
-    new_word_array[len(word_arrays[0])] = mandatory_letter
-    new_word_arrays = fill_in_blank_letters(new_word_array, new_word_arrays, optional_letters)
-    return new_word_arrays
+        for letter in letters:
+            new_word_array = word_array + [letter]
+            #if debug and new_word_array in new_word_arrays: print("duplicated word", new_word_array)
+            new_word_arrays.append(new_word_array)
+            check_word(new_word_array, min_word_length, debug)
+            #if debug: print("new word array", new_word_array)
+    # # word with mandatory letter at beginning and only optional letters
+    # new_word_array = [' '] * (len(word_arrays[0])+1)
+    # new_word_array[0] = mandatory_letter
+    # new_word_arrays = fill_in_blank_letters(new_word_array, new_word_arrays, optional_letters)
+
+    # word with only optional letters except for mandatory letter at end
+    new_word_arrays_with_only_optional_letters = []
+    for word_array in word_arrays_with_only_optional_letters:
+        for letter in optional_letters:
+            new_word_array_without_mandatory_letter = word_array + [letter]
+            new_word_arrays_with_only_optional_letters.append(new_word_array_without_mandatory_letter)
+            new_word_array = new_word_array_without_mandatory_letter + [mandatory_letter]
+            #if debug and new_word_array in new_word_arrays: print("duplicated word", new_word_array)
+            new_word_arrays.append(new_word_array)
+            check_word(new_word_array, min_word_length, debug)
+            #if debug: print("new word array", new_word_array)
+    return new_word_arrays, new_word_arrays_with_only_optional_letters
 
 # find all possible words with mandatory letter and optional letters. Each letter can be used multiple times.
 def start_find_words(mandatory_letter, optional_letters,
@@ -149,17 +155,26 @@ def start_find_words(mandatory_letter, optional_letters,
     tested_words_count = 0
     current_progress = 0
 
-    # check all possible words with min word length
-    word_arrays = find_word_arrays(mandatory_letter, letters, min_word_length, debug)
-    for word_array in word_arrays:
-        check_word(word_array, debug)
+    # # check all possible words with min word length
+    # word_arrays = find_word_arrays(mandatory_letter, letters, min_word_length, debug)
+    # for word_array in word_arrays:
+    #     check_word(word_array, debug)
+    #
+    # # check all possible words of all other word lengths
+    # for length in range(min_word_length+1, max_word_length+1):
+    #     word_arrays = find_word_arrays(mandatory_letter, letters, min_word_length, debug)
+    #     if len(word_arrays[0]) >= min_word_length:
+    #         for word_array in word_arrays:
+    #             check_word(word_array, debug)
 
-    # check all possible words of all other word lengths
-    for length in range(min_word_length+1, max_word_length+1):
-        word_arrays = find_more_words_arrays(word_arrays, mandatory_letter, optional_letters, letters, debug)
-        #word_arrays = find_word_arrays(mandatory_letter, letters, min_word_length, debug)
-        for word_array in word_arrays:
-            check_word(word_array, debug)
+    # find words of all lengths starting with word of length 1 [t]
+    # by recursively finding word_arrays of increasing length
+    word_arrays = [[mandatory_letter]]
+    word_arrays_with_only_optional_letters = [[]]
+    for length in range(1, max_word_length):
+        word_arrays, word_arrays_with_only_optional_letters = find_more_words_arrays(word_arrays,
+            word_arrays_with_only_optional_letters, mandatory_letter, optional_letters, letters,
+            min_word_length, debug)
 
     # print results
     # if not debug:
@@ -167,23 +182,22 @@ def start_find_words(mandatory_letter, optional_letters,
     #     sys.stdout.write("current progress is 100%")
     #     sys.stdout.flush()
     print("")
-    print("There are " + str(len(
-        found_words)) + " words with mandatory letter " + mandatory_letter + " and optional letters " + optional_letters + " are: ")
+    print("There are " + str(len(found_words)) + " words with mandatory letter " + mandatory_letter +
+          " and optional letters " + optional_letters + " are: ")
     for real_word in found_words:
         print(real_word)
 
 
 # test
-#start_find_words(mandatory_letter="r", optional_letters="tnacifo")
+#for long word 169826304 combinations
+start_find_words(mandatory_letter="r", optional_letters="tnacifo")
 #start_find_words(mandatory_letter="r", optional_letters="tnco", max_word_length=5, debug=True)
 #start_find_words(mandatory_letter="r", optional_letters="tnco", max_word_length=5)
 
 # timing for short word 3635 combinations
 #print(timeit.timeit('start_find_words(mandatory_letter="r", optional_letters="tnco", max_word_length=5)',
-#              'from __main__ import start_find_words', number=10))
+#              'from __main__ import start_find_words', number=10)/10)
 # run time with find_word_arrays is about 46 sec
 # run time with find_more_word_arrays is about 82 sec
 
-#timing for long word 169826304 combinations
-print(timeit.timeit('start_find_words(mandatory_letter="r", optional_letters="tnacifo", max_word_length=9)',
-              'from __main__ import start_find_words', number=1))
+
